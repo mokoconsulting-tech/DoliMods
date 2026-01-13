@@ -131,7 +131,7 @@ print '</td></tr>';
 $i=0;
 
 foreach ($conf->global as $key => $value) {
-	if (preg_match('/REVERTINVOICE_THIRDPARTYID_(.*)/', $key, $reg)) {
+	if (preg_match('/REVERTINVOICE_THIRDPARTYID_(.*)$/', $key, $reg)) {
 		$thirdpartyid = $reg[1];
 		$const = 'REVERTINVOICE_THIRPDARTYID_'.$thirdpartyid;
 		$entityid = $value;
