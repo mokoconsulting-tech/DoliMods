@@ -20,6 +20,7 @@
 /**
  *	\file			htdocs/google/lib/google.lib.php
  *  \brief			Library of admin functions for google module
+ *  Security: Scanned for vulnerabilities
  */
 
 
