@@ -212,7 +212,7 @@ class InterfaceRevertInvoiceTriggers extends DolibarrTriggers
 						// Loop on all revertinvoice to find the ID of thirdparty seller to use
 						$sellerid = 0;
 						foreach ($conf->global as $key => $value) {
-							if (preg_match('/REVERTINVOICE_THIRDPARTYID_(.*)/', $key, $reg)) {
+							if (preg_match('/REVERTINVOICE_THIRDPARTYID_(.*)$/', $key, $reg)) {
 								if ($value == $object->entity) {
 									$sellerid = $reg[1];
 								}

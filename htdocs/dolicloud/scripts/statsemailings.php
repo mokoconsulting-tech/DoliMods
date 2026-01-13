@@ -223,7 +223,7 @@ foreach ($listtype as $type) {
 		$var=true;
 		while (($file = readdir($handle))!==false) {
 			if (substr($file, 0, 1) <> '.' && substr($file, 0, 3) <> 'CVS') {
-				if (preg_match("/(.*(chiensderace|chatsderace))\.modules\.php$/", $file, $reg)) {
+				if (preg_match("/(.*?(chiensderace|chatsderace))\.modules\.php$/", $file, $reg)) {
 					$modulename=$reg[1];
 					if ($modulename == 'example') continue;
 
@@ -310,7 +310,7 @@ foreach ($listtype as $type) {
 		$var=true;
 		while (($file = readdir($handle))!==false) {
 			if (substr($file, 0, 1) <> '.' && substr($file, 0, 3) <> 'CVS') {
-				if (preg_match("/(.*(chiensderace|chatsderace)_forum)\.modules\.php$/", $file, $reg)) {
+				if (preg_match("/(.*?(chiensderace|chatsderace)_forum)\.modules\.php$/", $file, $reg)) {
 					$modulename=$reg[1];
 					if ($modulename == 'example') continue;
 

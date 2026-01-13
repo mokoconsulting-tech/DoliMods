@@ -303,7 +303,7 @@ function googleUpdateContact($client, $contactId, &$object, $useremail = 'defaul
 			//var_dump($errorselem);
 			//var_dump($errorselem->length);
 			//var_dump(count($errorselem));
-			if (preg_match('/<title>.*Not Found.*<\/title>/', $result['content'])) {
+			if (preg_match('/<title>.*?Not Found.*?<\/title>/s', $result['content'])) {
 				dol_syslog('Google server return message '.$result['content'].' so we leave with code 0', LOG_DEBUG);
 				return 0;
 			}
@@ -1104,7 +1104,7 @@ function insertGContactsEntries($gdata, $gContacts, $objectstatic, $useremail = 
 						if (!empty($node->person)) {
 							$idnode = $node->person->resourceName;
 							$userdefined = $node->person->userDefined[0]->value;
-							if (! empty($idnode) && preg_match('/^(\d+)\/(.*)/', $userdefined, $reg)) {
+							if (! empty($idnode) && preg_match('/^(\d+)\/(.*)$/', $userdefined, $reg)) {
 								if (! empty($reg[2])) {
 									$objectstatic->id=$reg[1];
 									$objectstatic->update_ref_ext("google:".$idnode);

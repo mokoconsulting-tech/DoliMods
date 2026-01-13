@@ -75,7 +75,7 @@ if (!isModEnabled("concatpdf")) {
  */
 
 $reg = array();
-if (preg_match('/set_(.*)/', $action, $reg)) {
+if (preg_match('/^set_(.*)$/', $action, $reg)) {
 	$code=$reg[1];
 	if (dolibarr_set_const($db, $code, 1, 'chaine', 0, '', 0) > 0) {
 		Header("Location: ".$_SERVER["PHP_SELF"]);
@@ -85,7 +85,7 @@ if (preg_match('/set_(.*)/', $action, $reg)) {
 	}
 }
 
-if (preg_match('/del_(.*)/', $action, $reg)) {
+if (preg_match('/^del_(.*)$/', $action, $reg)) {
 	$code=$reg[1];
 	if (dolibarr_del_const($db, $code, 0) > 0) {
 		Header("Location: ".$_SERVER["PHP_SELF"]);

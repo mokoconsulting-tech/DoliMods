@@ -285,7 +285,7 @@ class ActionsConcatPdf
 			$hidedetails = $hidedesc = $hideref = 0;
 			foreach ($concatpdffile as $concatfile) {
 				// We search which second file to add (or generate it if file to add as a name matching pdf__...modules)
-				if (preg_match('/^pdf_(.*)+\.modules/', $concatfile)) {
+				if (preg_match('/^pdf_(.*)\.modules/', $concatfile)) {
 					// We will generate the file to concat
 					require_once DOL_DOCUMENT_ROOT."/core/lib/files.lib.php";
 

@@ -416,7 +416,7 @@ if ($type == 'directory') {
 				$firstline=@file_get_contents($original_file_osencoded, false, null, 0, 32);
 				if ($firstline) {
 					$texts = preg_split("/((\r(?!\n))|((?<!\r)\n)|(\r\n))/", strtolower($firstline));
-					if (preg_match('/^#!.*\/bin\/(.*)$/', $texts[0], $reg)) {
+					if (preg_match('/^#!.*?\/bin\/(.*)$/', $texts[0], $reg)) {
 						$converttogeshicode=array('ksh'=>'bash', 'sh'=>'bash', 'bash'=>'bash');
 						$srclang=$converttogeshicode[$reg[1]]?$converttogeshicode[$reg[1]]:$reg[1];
 						//print "ee".$srclang;
