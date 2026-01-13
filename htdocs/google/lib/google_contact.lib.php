@@ -1104,7 +1104,7 @@ function insertGContactsEntries($gdata, $gContacts, $objectstatic, $useremail = 
 						if (!empty($node->person)) {
 							$idnode = $node->person->resourceName;
 							$userdefined = $node->person->userDefined[0]->value;
-							if (! empty($idnode) && preg_match('/^(\d+)\/(.*)/', $userdefined, $reg)) {
+							if (! empty($idnode) && preg_match('/^(\d+)\/(.*)$/', $userdefined, $reg)) {
 								if (! empty($reg[2])) {
 									$objectstatic->id=$reg[1];
 									$objectstatic->update_ref_ext("google:".$idnode);
