@@ -133,7 +133,7 @@ $i=0;
 foreach ($conf->global as $key => $value) {
 	if (preg_match('/REVERTINVOICE_THIRDPARTYID_(.*)$/', $key, $reg)) {
 		$thirdpartyid = $reg[1];
-		$const = 'REVERTINVOICE_THIRPDARTYID_'.$thirdpartyid;
+		$const = 'REVERTINVOICE_THIRDPARTYID_'.$thirdpartyid;
 		$entityid = $value;
 
 		$tmpcompany = new Societe($db);

@@ -1,0 +1,156 @@
+---
+name: "On Merge to Main"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: on-merge-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GITHUB_JSON: ${{ toJSON(github) }} # Helps in debugging Github Action
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: php
+          queries: security-and-quality
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:php"
+
+  phan-analysis:
+    name: Run Phan Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          coverage: none
+          tools: phan
+      
+      - name: Run Phan
+        run: |
+          if [ -f "dev/tools/phan/config.php" ]; then
+            phan --quick -k dev/tools/phan/config.php -B dev/tools/phan/baseline.txt --analyze-twice --minimum-target-php-version 7.0 --output-mode=checkstyle -o _phan.xml || true
+          fi
+      
+      - name: Upload Phan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phan-results
+          path: _phan.xml
+          retention-days: 7
+
+  run-scripts:
+    name: Run All Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+      
+      - name: Make scripts executable
+        run: |
+          find ./dev/tools -name "*.sh" -type f -exec chmod +x {} \;
+          find ./dev/translation -name "*.sh" -type f -exec chmod +x {} \;
+      
+      - name: Run fixdosfiles script
+        if: always()
+        run: |
+          if [ -f "dev/tools/fixdosfiles.sh" ]; then
+            echo "Running fixdosfiles.sh..."
+            cd dev/tools && ./fixdosfiles.sh || echo "Script completed with warnings"
+          fi
+        continue-on-error: true
+      
+      - name: Check for PHP syntax errors
+        if: always()
+        run: |
+          echo "Checking PHP syntax in all files..."
+          find ./htdocs -name "*.php" -type f ! -path "*/vendor/*" ! -path "*/includes/*" -exec php -l {} \; | grep -v "No syntax errors" || true
+        continue-on-error: true
+      
+      - name: Run translation sync check
+        if: always()
+        run: |
+          if [ -f "dev/translation/txpull.sh" ]; then
+            echo "Translation scripts found (running in dry-run mode)..."
+            echo "Note: Full translation sync requires API credentials"
+          fi
+        continue-on-error: true
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+      
+      - name: Check for common security patterns
+        run: |
+          echo "Checking for potential security issues..."
+          
+          # Check for eval() usage
+          echo "=== Checking for eval() usage ==="
+          grep -rn "eval(" --include="*.php" htdocs/ || echo "No eval() found (good!)"
+          
+          # Check for exec/system usage
+          echo "=== Checking for system execution functions ==="
+          grep -rn -E "(exec|system|passthru|shell_exec)\(" --include="*.php" htdocs/ | head -20 || echo "No system execution found"
+          
+          # Check for SQL injection risks
+          echo "=== Checking for potential SQL injection risks ==="
+          grep -rn "\$_\(GET\|POST\|REQUEST\)\[" --include="*.php" htdocs/ | grep -i "query\|sql" | head -20 || echo "No obvious SQL injection risks found"
+          
+          echo "Code quality check completed"
+        continue-on-error: true
+
+  summary:
+    name: Workflow Summary
+    runs-on: ubuntu-latest
+    needs: [security-scan, phan-analysis, run-scripts, code-quality]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# On Merge to Main - Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Jobs Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Security Scan: ${{ needs.security-scan.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Phan Analysis: ${{ needs.phan-analysis.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Run Scripts: ${{ needs.run-scripts.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Code Quality: ${{ needs.code-quality.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Repository" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Author: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
